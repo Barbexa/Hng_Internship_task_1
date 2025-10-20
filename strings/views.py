@@ -110,3 +110,66 @@ class StringDetailView(generics.RetrieveAPIView):
     # This tells DRF to use the URL variable (pk) to look up the primary key (id, which is the hash)
     lookup_field = 'pk' 
     # If the hash is not found, DRF automatically returns a 404 Not Found response.
+
+class StringRetrieveDestroyView(generics.RetrieveDestroyAPIView):
+    queryset = AnalyzedString.objects.all()
+    serializer_class= AnalyzedStringSerializer
+    lookup_field = 'pk'
+
+class NaturalLanguageView(APIView):
+    def get(self,request):
+        query_text = request.query_params.get('query', '')
+
+        if not query_text:
+            return Response(
+                {"error": "Missing 'query' "},
+                status= status.HTTP_400_BAD_REQUEST
+            )
+        
+        interpreted_filters={}
+        
+        if "single word palindromic strings" in query_text.lower():
+            # Example: "all single word palindromic strings"
+            interpreted_filters['is_palindrome'] = 'true'
+            interpreted_filters['word_count'] = 1
+        
+        elif "longer than 10 characters" in query_text.lower():
+            # Example: "strings longer than 10 characters"
+            interpreted_filters['min_length'] = 11
+            
+        elif "contain the letter z" in query_text.lower():
+            # Example: "strings containing the letter z"
+            interpreted_filters['contains_character'] = 'z'
+        
+        elif not interpreted_filters:
+            # Handle unparsable/unsupported queries
+            return Response(
+                {"error": "Unable to parse natural language query."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # --- STEP 2: Apply Filters and Get Results ---
+        # Create a temporary queryset based on the interpreted filters
+        queryset = StringListView.queryset.all()
+        filterset = StringFilter(interpreted_filters, queryset=queryset)
+        
+        if not filterset.is_valid():
+             # 422 Unprocessable Entity: Query parsed but resulted in conflicting/invalid filters
+             return Response(
+                {"error": "Interpreted query resulted in invalid filter parameters."}, 
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
+
+        filtered_data = filterset.qs
+        
+        # --- STEP 3: Format Success Response ---
+        serializer = StringListView.serializer_class(filtered_data, many=True)
+        
+        return Response({
+            "data": serializer.data,
+            "count": filtered_data.count(),
+            "interpreted_query": {
+                "original": query_text,
+                "filters_applied": interpreted_filters
+            }
+        }, status=status.HTTP_200_OK)
