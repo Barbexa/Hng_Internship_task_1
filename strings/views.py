@@ -13,7 +13,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 import django_filters
 from .analyzer import analyze_string
+from django.http import HttpResponse
 
+def home_view(request):
+    return HttpResponse("<h1>Your Django App is working on Railway!</h1>")
 
 class StringFilter(django_filters.FilterSet):
     # Filters corresponding to: ?is_palindrome=true

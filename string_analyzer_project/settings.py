@@ -26,7 +26,8 @@ DEBUG = True
 
 
 ALLOWED_HOSTS = [
-    'web-production-22352.up.railway.app', # Your specific Railway domain
+    'web-production-22352.up.railway.app',
+    'web-production-22352.up.railway.app' # Your specific Railway domain
     '127.0.0.1', # For local testing
     'localhost',
 ]
