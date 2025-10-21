@@ -142,7 +142,7 @@ class NaturalLanguageView(APIView):
         filtered_data = filterset.qs
         
         # --- STEP 3: Format Success Response ---
-        serializer = StringListView.serializer_class(filtered_data, many=True)
+        serializer = StringListCreateAPIView.serializer_class(filtered_data, many=True)
         
         return Response({
             "data": serializer.data,
