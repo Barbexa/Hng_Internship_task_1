@@ -14,58 +14,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 import django_filters
 from .analyzer import analyze_string
 
-class StringListCreateView(APIView):
-    """
-    Handles POST /api/strings for string analysis and creation.
-    """
 
-    def post(self, request):
-        # 1. Extract the 'value' field from the request body
-        value = request.data.get('value')
-        
-        # --- 2. Error Handling: 400 Bad Request ---
-        if value is None:
-            return Response(
-                {"error": "Missing 'value' field in request body."}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # --- 3. Error Handling: 422 Unprocessable Entity ---
-        if not isinstance(value, str):
-            return Response(
-                {"error": "'value' must be a string."}, 
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY
-            )
-        
-        # --- 4. Core Business Logic: Analysis ---
-        analysis_data = analyze_string(value)
-        
-        # --- 5. Error Handling: 409 Conflict ---
-        # Check if a string with this ID (hash) already exists in the database
-        if AnalyzedString.objects.filter(pk=analysis_data['id']).exists():
-            return Response(
-                {"error": "String already exists in the system."}, 
-                status=status.HTTP_409_CONFLICT
-            )
-        
-        # --- 6. Data Storage (Persistence) ---
-        # Create and save the model instance using the analysis data
-        instance = AnalyzedString(
-            id=analysis_data['id'],
-            value=analysis_data['value'],
-            length=analysis_data['length'],
-            is_palindrome=analysis_data['is_palindrome'],
-            unique_characters=analysis_data['unique_characters'],
-            word_count=analysis_data['word_count'],
-            character_frequency_map=analysis_data['character_frequency_map']
-        )
-        instance.save()
-        
-        # --- 7. Response ---
-        serializer = AnalyzedStringSerializer(instance)
-        # 201 Created Status for successful resource creation
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
 class StringFilter(django_filters.FilterSet):
     # Filters corresponding to: ?is_palindrome=true
     is_palindrome = django_filters.BooleanFilter(field_name='is_palindrome')
@@ -87,19 +36,46 @@ class StringFilter(django_filters.FilterSet):
         # Include any fields you want to filter directly without a custom definition (e.g., ?length=10)
         fields = ['is_palindrome', 'length', 'word_count'] 
 
-
-# --- 1B. GET /strings? (List and Filter View) ---
-class StringListView(generics.ListAPIView):
-    """Handles GET /api/strings? for listing all strings with filtering."""
+class StringListCreateAPIView(generics.ListCreateAPIView):
+    """Handles both GET (List/Filter) and POST (Creation/Analysis) on /strings/."""
     queryset = AnalyzedString.objects.all()
     serializer_class = AnalyzedStringSerializer
     
-    # Enable the DRF filter backends
+    # Filtering settings (inherited from StringListView)
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_class = StringFilter # Point to your custom filter class
-    
-    # Allows sorting: ?ordering=length or ?ordering=-created_at
+    filterset_class = StringFilter 
     ordering_fields = ['length', 'word_count', 'created_at'] 
+
+    def create(self, request, *args, **kwargs):
+        """Overrides the POST method to include custom analysis and error handling."""
+        value = request.data.get('value')
+        
+        # --- (Place your full custom POST logic here, exactly as it was in the post() method of StringListCreateView) ---
+        
+        # 1. Error Handling: 400/422 Checks for 'value' existence and type
+        if value is None:
+            return Response({"error": "Missing 'value' field in request body."}, status=status.HTTP_400_BAD_REQUEST)
+        if not isinstance(value, str):
+            return Response({"error": "'value' must be a string."}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        
+        # 2. Analysis and 409 Conflict Check
+        analysis_data = analyze_string(value)
+        if AnalyzedString.objects.filter(pk=analysis_data['id']).exists():
+            return Response({"error": "String already exists in the system."}, status=status.HTTP_409_CONFLICT)
+        
+        # 3. Create/Save Instance
+        instance = AnalyzedString.objects.create(
+            # Pass all fields from analysis_data to create the instance
+            id=analysis_data['id'], value=analysis_data['value'],
+            length=analysis_data['length'], is_palindrome=analysis_data['is_palindrome'],
+            unique_characters=analysis_data['unique_characters'], word_count=analysis_data['word_count'],
+            character_frequency_map=analysis_data['character_frequency_map']
+        )
+        
+        # 4. Success Response
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 
 # --- 1C. GET /strings/{sha256_hash} (Detail View) ---
@@ -173,3 +149,6 @@ class NaturalLanguageView(APIView):
                 "filters_applied": interpreted_filters
             }
         }, status=status.HTTP_200_OK)
+    
+
+

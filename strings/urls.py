@@ -1,12 +1,12 @@
 from django.urls import path
-from .views import StringListCreateView, StringListView, StringRetrieveDestroyView, NaturalLanguageView
+from .views import StringListCreateAPIView, StringRetrieveDestroyView, NaturalLanguageView
 
 
 urlpatterns =[
-    path('strings/create/', StringListCreateView.as_view(), name='string-list-create'),
-    path('strings/', StringListView.as_view(), name='string-list-filter'),
+    path('strings/', StringListCreateAPIView.as_view(), name='string-list-create'),
     path('strings/<str:pk>/', StringRetrieveDestroyView.as_view(), name='string-detail-delete'),
     path('strings/filter-by-natural-language', NaturalLanguageView.as_view(), name='natural-language-filter' ),
+    
 
 
 ]
