@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-8@v9(og*x_9l1504a)mktjk@0zwmi(agnck5o1m_2evs^+9(@-
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'hnginternshiptask0.pxxl.click',
+    'hnginternshiptasks1.pxxl.click',
     '127.0.0.1', # For local testing
     'localhost',
 ]
@@ -127,3 +127,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+
