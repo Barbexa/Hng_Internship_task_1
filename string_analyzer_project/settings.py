@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-8@v9(og*x_9l1504a)mktjk@0zwmi(agnck5o1m_2evs^+9(@-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'hnginternshiptask0.pxxl.click',
+    '127.0.0.1', # For local testing
+    'localhost',
+]
 
 
 # Application definition
