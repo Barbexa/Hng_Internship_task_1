@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,12 +24,12 @@ SECRET_KEY = 'django-insecure-8@v9(og*x_9l1504a)mktjk@0zwmi(agnck5o1m_2evs^+9(@-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = [
-    'hnginternshiptasks1.pxxl.click',
+    'web-production-22352.up.railway.app', # Your specific Railway domain
     '127.0.0.1', # For local testing
     'localhost',
 ]
-
 
 # Application definition
 
